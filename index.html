@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Reaction Rush - The Medicine Maven</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --accent: #2ecc71;
+            --accent-danger: #e74c3c;
+            --primary: #3498db;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+            touch-action: manipulation;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Raw Image Logo Container */
+        .branding-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .maven-logo {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .maven-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--text-main);
+        }
+
+        /* Screen States */
+        .screen {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Input Form */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            text-align: left;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        input[type="text"] {
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* HUD dashboard style */
+        .hud-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .hud-card {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #edf2f7;
+        }
+
+        .hud-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .hud-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        /* Game Arena */
+        .game-arena {
+            width: 100%;
+            height: 320px;
+            background-color: #f8fafc;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            border: 2px dashed #e2e8f0;
+            cursor: pointer;
+        }
+
+        /* Fixed 36px interactive dot */
+        .target-node {
+            width: 36px;
+            height: 36px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+            transform: translate(-50%, -50%);
+            touch-action: none;
+        }
+
+        /* Leaderboard styling */
+        .leaderboard {
+            text-align: left;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .leaderboard-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #edf2f7;
+            padding-bottom: 4px;
+        }
+
+        .leaderboard-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 4px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.95rem;
+        }
+
+        .leaderboard-row:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .score-box {
+            font-weight: 700;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Raw unmodified branding header configured for JPG file -->
+    <div class="branding-header">
+        <img src="logo.jpg" alt="THE MEDICINE MAVEN Logo" class="maven-logo" onerror="this.style.display='none'">
+        <div class="maven-title">THE MEDICINE MAVEN</div>
+    </div>
+
+    <!-- REGISTER SCREEN -->
+    <div id="registerScreen" class="screen active">
+        <div class="input-group">
+            <label for="playerName">ENTER RUNNER NAME</label>
+            <input type="text" id="playerName" placeholder="Your Name" autocomplete="off">
+        </div>
+        <button class="btn" onclick="submitRegistration()">START GAME</button>
+    </div>
+
+    <!-- GAMEPLAY SCREEN -->
+    <div id="gameScreen" class="screen">
+        <div class="hud-grid">
+            <div class="hud-card">
+                <div class="hud-label">⚡ Synapse</div>
+                <div id="hudScore" class="hud-value">0</div>
+            </div>
+            <div class="hud-card">
+                <div class="hud-label">⏱️ Time Left</div>
+                <div id="hudTimer" class="hud-value">15.0s</div>
+            </div>
+            <div class="hud-card">
+                <div class="hud-label">🔥 Adrenaline</div>
+                <div id="hudStreak" class="hud-value">x0</div>
+            </div>
+            <div class="hud-card">
+                <div class="hud-label">🧬 Live Match</div>
+                <div id="hudLiveAnimal" class="hud-value" style="font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">--</div>
+            </div>
+        </div>
+
+        <div class="game-arena" id="arena" onclick="handleMissclick(event)">
+            <div class="target-node" id="target" onclick="handleHit(event)"></div>
+        </div>
+    </div>
+
+    <!-- RECAP SCREEN -->
+    <div id="recapScreen" class="screen">
+        <h2 style="font-size: 1.5rem;">⚡ Performance Summary</h2>
+        <div class="hud-grid" style="margin-top: 10px;">
+            <div class="hud-card" style="grid-column: span 2;">
+                <div class="hud-label">🧬 Biological Profile Assignment</div>
+                <div id="recapAvgAnimal" class="hud-value" style="color: var(--primary); font-size: 1.3rem;">--</div>
+            </div>
+            <div class="hud-card">
+                <div class="hud-label">⏱️ Avg Reflex</div>
+                <div id="recapAvgTime" class="hud-value">0 ms</div>
+            </div>
+            <div class="hud-card">
+                <div class="hud-label">🏎️ Peak Reflex</div>
+                <div id="recapFastestTime" class="hud-value">0 ms</div>
+            </div>
+            <div class="hud-card" style="grid-column: span 2;">
+                <div class="hud-label">⚡ Single Peak Reflex Animal</div>
+                <div id="recapFastestAnimal" class="hud-value" style="font-size: 1rem;">--</div>
+            </div>
+        </div>
+
+        <button class="btn" onclick="resetGame()" style="margin-top: 10px;">RUN TEST AGAIN</button>
+
+        <div class="leaderboard">
+            <div class="leaderboard-title">🏆 Local Network Standings</div>
+            <div id="leaderboardRows"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 100-Animal biological speed mapping (Fixed millisecond indices)
+    const animalDict = [
+        { ms: 1, name: "Deep-Sea Copepod" }, { ms: 4, name: "Condylostylus Fly" }, { ms: 6, name: "Froghopper Insect" },
+        { ms: 8, name: "Common Housefly" }, { ms: 12, name: "Ghost Shrimp" }, { ms: 15, name: "Striking Cat" },
+        { ms: 18, name: "Marsh Mongoose" }, { ms: 22, name: "Pike Fish Prey Strike" }, { ms: 25, name: "Chameleon Tongue" },
+        { ms: 28, name: "Sidewinder Rattlesnake" }, { ms: 32, name: "Cottonmouth Snake" }, { ms: 36, name: "Kangaroo Rat Escape" },
+        { ms: 40, name: "Star-Nosed Mole Elector" }, { ms: 45, name: "Mantled Goshawk" }, { ms: 50, name: "Peregrine Falcon" },
+        { ms: 55, name: "Cheetah Sprint Reflex" }, { ms: 60, name: "Pronghorn Antelope" }, { ms: 65, name: "Thoroughbred Horse" },
+        { ms: 70, name: "Greyhound Tracker" }, { ms: 75, name: "California Sea Lion" }, { ms: 80, name: "Spotted Hyena" },
+        { ms: 85, name: "African Leopard" }, { ms: 90, name: "Vampire Bat Strike" }, { ms: 95, name: "Sailfish Lunge" },
+        { ms: 100, name: "Barn Owl Strike" }, { ms: 105, name: "Dragonfly Intercept" }, { ms: 110, name: "American Kestrel" },
+        { ms: 115, name: "Red Fox Pounce" }, { ms: 120, name: "Grizzly Bear Swipe" }, { ms: 125, name: "Timber Wolf" },
