@@ -49,7 +49,6 @@
             gap: 20px;
         }
 
-        /* Raw Image Logo Container */
         .branding-header {
             display: flex;
             flex-direction: column;
@@ -70,7 +69,6 @@
             color: var(--text-main);
         }
 
-        /* Screen States */
         .screen {
             display: none;
             flex-direction: column;
@@ -81,7 +79,6 @@
             display: flex;
         }
 
-        /* Input Form (Fixed to prevent page refresh) */
         .input-group {
             display: flex;
             flex-direction: column;
@@ -110,7 +107,6 @@
             border-color: var(--primary);
         }
 
-        /* Buttons */
         .btn {
             background-color: var(--primary);
             color: white;
@@ -127,7 +123,6 @@
             transform: scale(0.98);
         }
 
-        /* HUD dashboard style */
         .hud-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -154,7 +149,6 @@
             font-weight: 700;
         }
 
-        /* Game Arena */
         .game-arena {
             width: 100%;
             height: 320px;
@@ -166,7 +160,6 @@
             cursor: pointer;
         }
 
-        /* Fixed 36px interactive dot */
         .target-node {
             width: 36px;
             height: 36px;
@@ -177,13 +170,13 @@
             box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
             transform: translate(-50%, -50%);
             touch-action: none;
+            display: none;
         }
 
-        /* Leaderboard styling */
         .leaderboard {
             text-align: left;
             margin-top: 10px;
-            max-height: 200px;
+            max-height: 180px;
             overflow-y: auto;
         }
 
@@ -216,13 +209,12 @@
 <body>
 
 <div class="container">
-    <!-- Raw unmodified branding header configured for JPG file -->
     <div class="branding-header">
         <img src="logo.jpg" alt="THE MEDICINE MAVEN Logo" class="maven-logo" onerror="this.style.display='none'">
         <div class="maven-title">THE MEDICINE MAVEN</div>
     </div>
 
-    <!-- REGISTER SCREEN (Removed HTML form tag entirely to fix layout reload bug) -->
+    <!-- REGISTER SCREEN (Bypasses pace choices instantly) -->
     <div id="registerScreen" class="screen active">
         <div class="input-group">
             <label for="playerName">ENTER RUNNER NAME</label>
@@ -271,31 +263,70 @@
             </div>
             <div class="hud-card">
                 <div class="hud-label">🏎️ Peak Reflex</div>
-                <div id="recapFastestTime" class="hud-value">0 ms</div>
+                <div id="recapPeakTime" class="hud-value">0 ms</div>
             </div>
-            <div class="hud-card" style="grid-column: span 2;">
-                <div class="hud-label">⚡ Single Peak Reflex Animal</div>
-                <div id="recapFastestAnimal" class="hud-value" style="font-size: 1rem;">--</div>
+            <div class="hud-card">
+                <div class="hud-label">🎯 Final Score</div>
+                <div id="recapScore" class="hud-value">0</div>
+            </div>
+            <div class="hud-card">
+                <div class="hud-label">🔥 Max Streak</div>
+                <div id="recapMaxStreak" class="hud-value">0</div>
             </div>
         </div>
-
-        <button type="button" class="btn" onclick="resetGame()" style="margin-top: 10px;">RUN TEST AGAIN</button>
 
         <div class="leaderboard">
-            <div class="leaderboard-title">🏆 Local Network Standings</div>
-            <div id="leaderboardRows"></div>
+            <div class="leaderboard-title">🏆 Top Runners (15s Challenge)</div>
+            <div id="leaderboardList"></div>
         </div>
+
+        <button type="button" class="btn" onclick="restartGame()">RUN AGAIN</button>
     </div>
 </div>
 
 <script>
-    // 100-Animal biological speed mapping (Fixed millisecond indices)
-    const animalDict = [
-        { ms: 1, name: "Deep-Sea Copepod" }, { ms: 4, name: "Condylostylus Fly" }, { ms: 6, name: "Froghopper Insect" },
-        { ms: 8, name: "Common Housefly" }, { ms: 12, name: "Ghost Shrimp" }, { ms: 15, name: "Striking Cat" },
-        { ms: 18, name: "Marsh Mongoose" }, { ms: 22, name: "Pike Fish Prey Strike" }, { ms: 25, name: "Chameleon Tongue" },
-        { ms: 28, name: "Sidewinder Rattlesnake" }, { ms: 32, name: "Cottonmouth Snake" }, { ms: 36, name: "Kangaroo Rat Escape" },
-        { ms: 40, name: "Star-Nosed Mole Elector" }, { ms: 45, name: "Mantled Goshawk" }, { ms: 50, name: "Peregrine Falcon" },
-        { ms: 55, name: "Cheetah Sprint Reflex" }, { ms: 60, name: "Pronghorn Antelope" }, { ms: 65, name: "Thoroughbred Horse" },
-        { ms: 70, name: "Greyhound Tracker" }, { ms: 75, name: "California Sea Lion" }, { ms: 80, name: "Spotted Hyena" },
-        { ms: 85, name: "African Leopard" }, { ms: 90, name: "Vampire Bat Strike" }, { ms: 95, name: "Sailfish Lunge" },
+    let player = "";
+    let score = 0;
+    let streak = 0;
+    let maxStreak = 0;
+    let timeLeft = 15.0; // Enforced 15-second loop
+    let gameInterval = null;
+    let targetSpawnTime = 0;
+    let reactionTimes = [];
+
+    const animals = [
+        { name: "⚡ Peregrine Falcon", maxTime: 160 },
+        { name: "🐆 Cheetah Speed", maxTime: 210 },
+        { name: "🐇 Reflex Hare", maxTime: 260 },
+        { name: "🦊 Clever Fox", maxTime: 320 },
+        { name: "🐈 House Cat", maxTime: 400 },
+        { name: "🐢 Precision Turtle", maxTime: Infinity }
+    ];
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function handleEnterKey(e) {
+        if (e.key === "Enter") submitRegistration();
+    }
+
+    function submitRegistration() {
+        const nameInput = document.getElementById('playerName').value.trim();
+        player = nameInput || "Anonymous Runner";
+        startGame();
+    }
+
+    function startGame() {
+        score = 0;
+        streak = 0;
+        maxStreak = 0;
+        timeLeft = 15.0;
+        reactionTimes = [];
+        
+        document.getElementById('hudScore').innerText = "0";
+        document.getElementById('hudTimer').innerText = "15.0s";
+        document.getElementById('hudStreak').innerText = "x0";
+        document.getElementById('hudLiveAnimal').innerText = "--";
+
