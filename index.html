@@ -81,7 +81,7 @@
             display: flex;
         }
 
-        /* Input Form */
+        /* Input Form (Fixed to prevent page refresh) */
         .input-group {
             display: flex;
             flex-direction: column;
@@ -102,6 +102,8 @@
             font-size: 1rem;
             outline: none;
             transition: border-color 0.2s;
+            user-select: text;
+            -webkit-user-select: text;
         }
 
         input[type="text"]:focus {
@@ -220,13 +222,13 @@
         <div class="maven-title">THE MEDICINE MAVEN</div>
     </div>
 
-    <!-- REGISTER SCREEN -->
+    <!-- REGISTER SCREEN (Removed HTML form tag entirely to fix layout reload bug) -->
     <div id="registerScreen" class="screen active">
         <div class="input-group">
             <label for="playerName">ENTER RUNNER NAME</label>
-            <input type="text" id="playerName" placeholder="Your Name" autocomplete="off">
+            <input type="text" id="playerName" placeholder="Your Name" autocomplete="off" onkeydown="handleEnterKey(event)">
         </div>
-        <button class="btn" onclick="submitRegistration()">START GAME</button>
+        <button type="button" class="btn" onclick="submitRegistration()">START GAME</button>
     </div>
 
     <!-- GAMEPLAY SCREEN -->
@@ -277,7 +279,7 @@
             </div>
         </div>
 
-        <button class="btn" onclick="resetGame()" style="margin-top: 10px;">RUN TEST AGAIN</button>
+        <button type="button" class="btn" onclick="resetGame()" style="margin-top: 10px;">RUN TEST AGAIN</button>
 
         <div class="leaderboard">
             <div class="leaderboard-title">🏆 Local Network Standings</div>
@@ -297,5 +299,3 @@
         { ms: 55, name: "Cheetah Sprint Reflex" }, { ms: 60, name: "Pronghorn Antelope" }, { ms: 65, name: "Thoroughbred Horse" },
         { ms: 70, name: "Greyhound Tracker" }, { ms: 75, name: "California Sea Lion" }, { ms: 80, name: "Spotted Hyena" },
         { ms: 85, name: "African Leopard" }, { ms: 90, name: "Vampire Bat Strike" }, { ms: 95, name: "Sailfish Lunge" },
-        { ms: 100, name: "Barn Owl Strike" }, { ms: 105, name: "Dragonfly Intercept" }, { ms: 110, name: "American Kestrel" },
-        { ms: 115, name: "Red Fox Pounce" }, { ms: 120, name: "Grizzly Bear Swipe" }, { ms: 125, name: "Timber Wolf" },
